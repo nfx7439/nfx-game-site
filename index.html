@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFX Game Zone</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ffff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 60px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px #0ff;
+    }
+    h3 {
+      font-weight: normal;
+      font-size: 20px;
+      color: #ccc;
+      margin-bottom: 30px;
+    }
+    button {
+      padding: 14px 28px;
+      margin: 10px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #0ff;
+      color: #000;
+      box-shadow: 0 0 10px #0ff;
+      cursor: pointer;
+    }
+    input[type="text"] {
+      padding: 12px;
+      font-size: 18px;
+      width: 300px;
+      border-radius: 6px;
+      border: none;
+      text-align: center;
+      box-shadow: 0 0 10px #0ff;
+      margin-top: 10px;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 3px solid #0ff;
+      box-shadow: 0 0 20px #0ff;
+    }
+    #emoji {
+      font-size: 50px;
+      margin-top: 20px;
+      display: none;
+    }
+    #retryBtn {
+      display: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>NFX</h1>
+  <h3>Welcome to the neon world of <strong>Mushab Khan</strong>, where fun games and glowing vibes meet the magic of code!</h3>
+
+  <div id="nameInput">
+    <input type="text" id="playerName" placeholder="Enter your name">
+    <button onclick="showGameOptions()">Continue</button>
+  </div>
+
+  <div id="gameSelector" style="display: none;">
+    <h2>Choose Your Game:</h2>
+    <button onclick="startGame('car')">🚗 Car Race</button>
+    <button onclick="startGame('truth')">🎭 Truth or Dare</button>
+    <button onclick="startGame('snake')">🐍 Snake Game</button>
+  </div>
+
+  <div id="gameArea" style="display: none;">
+    <div id="truthDareGame" style="display:none;">
+      <button onclick="getTruth()">Truth</button>
+      <button onclick="getDare()">Dare</button>
+      <div id="prompt"></div>
+      <input type="text" id="userAnswer" placeholder="Your answer here...">
+      <button onclick="checkAnswer()">Submit</button>
+      <div id="emoji"></div>
+    </div>
+
+    <div id="carGame" style="display:none;">
+      <canvas id="carCanvas" width="300" height="400"></canvas>
+      <button id="retryBtn" onclick="startGame('car')">Retry</button>
+    </div>
+
+    <div id="snakeGame" style="display:none;">
+      <canvas id="snakeCanvas" width="300" height="300"></canvas>
+      <div id="snakeScore">Score: 0</div>
+    </div>
+  </div>
+
+  <script>
+    const truths = [
+      "What's your biggest crush secret?",
+      "Have you ever lied to your best friend?",
+      "What's your most embarrassing moment?",
+      "Who was your first love? 💖",
+      "Have you ever stalked someone on Instagram?",
+      "What's something you never told anyone?",
+      "What's the weirdest dream you've had?",
+      "Would you go on a date with your best friend?"
+    ];
+
+    const dares = [
+      "Send a heart emoji 💗 to your last WhatsApp contact",
+      "Say 'I love you' to the mirror loudly",
+      "Write your crush’s name in the air",
+      "Record a 5-sec audio saying 'I’m the cutest!'",
+      "Make a funny face selfie and send to a friend 😜",
+      "Call someone and sing a romantic song",
+      "Post 'I'm in love 💕' on your story (delete after 10s)",
+      "Imitate your favorite actor for 10 seconds"
+    ];
+
+    function showGameOptions() {
+      const name = document.getElementById("playerName").value.trim();
+      if (!name) {
+        alert("Please enter your name.");
+        return;
+      }
+      document.getElementById("nameInput").style.display = 'none';
+      document.getElementById("gameSelector").style.display = 'block';
+    }
+
+    function startGame(game) {
+      document.getElementById("gameSelector").style.display = 'none';
+      document.getElementById("gameArea").style.display = 'block';
+
+      document.getElementById("truthDareGame").style.display = 'none';
+      document.getElementById("carGame").style.display = 'none';
+      document.getElementById("snakeGame").style.display = 'none';
+      document.getElementById("retryBtn").style.display = 'none';
+
+      if (game === 'truth') {
+        document.getElementById("truthDareGame").style.display = 'block';
+      } else if (game === 'car') {
+        document.getElementById("carGame").style.display = 'block';
+        runCarGame();
+      } else if (game === 'snake') {
+        document.getElementById("snakeGame").style.display = 'block';
+        runSnakeGame();
+      }
+    }
+
+    function getTruth() {
+      const q = truths[Math.floor(Math.random() * truths.length)];
+      document.getElementById("prompt").innerText = q;
+      document.getElementById("emoji").style.display = 'none';
+    }
+
+    function getDare() {
+      const q = dares[Math.floor(Math.random() * dares.length)];
+      document.getElementById("prompt").innerText = q;
+      document.getElementById("emoji").style.display = 'none';
+    }
+
+    function checkAnswer() {
+      const answer = document.getElementById("userAnswer").value.trim();
+      const emojiBox = document.getElementById("emoji");
+      if (answer.length > 3) {
+        emojiBox.innerText = "❤️";
+      } else {
+        emojiBox.innerText = "😈";
+      }
+      emojiBox.style.display = 'block';
+    }
+
+    function runCarGame() {
+      const canvas = document.getElementById("carCanvas");
+      const ctx = canvas.getContext("2d");
+      let carX = 130;
+      let carY = 340;
+      let obstacleY = -50;
+      let score = 0;
+
+      function drawCar() {
+        ctx.fillStyle = '#00f';
+        ctx.fillRect(carX, carY, 40, 60);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(carX + 10, carY + 10, 20, 10);
+        ctx.fillStyle = '#333';
+        ctx.fillRect(carX + 5, carY + 50, 10, 10);
+        ctx.fillRect(carX + 25, carY + 50, 10, 10);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, 300, 400);
+        ctx.fillStyle = '#222';
+        ctx.fillRect(100, 0, 100, 400);
+        drawCar();
+        ctx.fillStyle = '#f00';
+        ctx.fillRect(120, obstacleY, 60, 20);
+        obstacleY += 4;
+        if (obstacleY > 400) {
+          obstacleY = -50;
+          score++;
+        }
+        if (
+          obstacleY + 20 >= carY &&
+          obstacleY <= carY + 60 &&
+          carX < 180 && carX + 40 > 120
+        ) {
+          clearInterval(carGame);
+          document.getElementById("retryBtn").style.display = 'inline-block';
+          alert("Crash! Score: " + score);
+        }
+        ctx.fillStyle = '#0f0';
+        ctx.font = '18px sans-serif';
+        ctx.fillText('Score: ' + score, 10, 20);
+      }
+
+      document.onkeydown = (e) => {
+        if (e.key === "ArrowLeft" && carX > 100) carX -= 10;
+        if (e.key === "ArrowRight" && carX < 160) carX += 10;
+      };
+
+      let carGame = setInterval(draw, 60);
+    }
+
+    function runSnakeGame() {
+      const canvas = document.getElementById("snakeCanvas");
+      const ctx = canvas.getContext("2d");
+      const box = 20;
+      let snake = [{ x: 160, y: 160 }];
+      let food = { x: 100, y: 100 };
+      let direction = 'RIGHT';
+      let score = 0;
+
+      document.addEventListener("keydown", e => {
+        if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+        if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+        if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+        if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      });
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < snake.length; i++) {
+          ctx.fillStyle = i === 0 ? "#0ff" : "#022";
+          ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        }
+        ctx.fillStyle = "#f00";
+        ctx.fillRect(food.x, food.y, box, box);
+        let headX = snake[0].x;
+        let headY = snake[0].y;
+        if (direction === "UP") headY -= box;
+        if (direction === "DOWN") headY += box;
+        if (direction === "LEFT") headX -= box;
+        if (direction === "RIGHT") headX += box;
+        if (headX === food.x && headY === food.y) {
+          score++;
+          food = {
+            x: Math.floor(Math.random() * (canvas.width / box)) * box,
+            y: Math.floor(Math.random() * (canvas.height / box)) * box
+          };
+        } else {
+          snake.pop();
+        }
+        let newHead = { x: headX, y: headY };
+        if (headX < 0 || headY < 0 || headX >= canvas.width || headY >= canvas.height || snake.some(part => part.x === headX && part.y === headY)) {
+          clearInterval(game);
+          alert("Game Over! Score: " + score);
+        }
+        snake.unshift(newHead);
+        document.getElementById("snakeScore").innerText = "Score: " + score;
+      }
+      let game = setInterval(draw, 100);
+    }
+  </script>
+</body>
+</html>
